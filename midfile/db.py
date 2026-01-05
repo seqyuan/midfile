@@ -194,26 +194,16 @@ class db_sql:
             raise
 
     def get_unique_values(self):
-        """获取 product, ftype, fileformat 的唯一值"""
+        """获取 product, ftype, fileformat 的唯一组合"""
         try:
-            result = {}
-            
-            # 获取 product 的唯一值
-            product_sql = "SELECT DISTINCT product FROM files WHERE product IS NOT NULL AND product != '' ORDER BY product"
-            product_df = pd.read_sql(product_sql, con=self.conn)
-            result['product'] = product_df['product'].tolist() if not product_df.empty else []
-            
-            # 获取 ftype 的唯一值
-            ftype_sql = "SELECT DISTINCT ftype FROM files WHERE ftype IS NOT NULL AND ftype != '' ORDER BY ftype"
-            ftype_df = pd.read_sql(ftype_sql, con=self.conn)
-            result['ftype'] = ftype_df['ftype'].tolist() if not ftype_df.empty else []
-            
-            # 获取 fileformat 的唯一值
-            fileformat_sql = "SELECT DISTINCT fileformat FROM files WHERE fileformat IS NOT NULL AND fileformat != '' ORDER BY fileformat"
-            fileformat_df = pd.read_sql(fileformat_sql, con=self.conn)
-            result['fileformat'] = fileformat_df['fileformat'].tolist() if not fileformat_df.empty else []
-            
-            return result
+            # 获取 product, ftype, fileformat 的唯一组合
+            sql = """
+            SELECT DISTINCT product, ftype, fileformat 
+            FROM files 
+            ORDER BY product, ftype, fileformat
+            """
+            df = pd.read_sql(sql, con=self.conn)
+            return df
         except Exception as e:
             logger.error(f'获取唯一值失败: {e}')
             raise

@@ -276,32 +276,21 @@ def ref_query(outfile, subprojectid):
 
 @main.command(name="info", short_help="显示 product, ftype, fileformat 的唯一值")
 def info():
-    """显示数据库中 product, ftype, fileformat 字段的唯一值"""
+    """显示数据库中 product, ftype, fileformat 字段的唯一组合"""
     dbpath = get_dbpath()
     with db_sql(dbpath) as tbj:
-        unique_values = tbj.get_unique_values()
+        df = tbj.get_unique_values()
     
-    print("数据库中的唯一值：")
-    print("\nProduct:")
-    if unique_values['product']:
-        for item in unique_values['product']:
-            print(f"  - {item}")
-    else:
-        print("  (无数据)")
+    # 打印表头
+    print("product\tftype\tfileformat")
     
-    print("\nFtype:")
-    if unique_values['ftype']:
-        for item in unique_values['ftype']:
-            print(f"  - {item}")
-    else:
-        print("  (无数据)")
-    
-    print("\nFileformat:")
-    if unique_values['fileformat']:
-        for item in unique_values['fileformat']:
-            print(f"  - {item}")
-    else:
-        print("  (无数据)")
+    # 打印每一行数据
+    if not df.empty:
+        for _, row in df.iterrows():
+            product = row['product'] if pd.notna(row['product']) else ''
+            ftype = row['ftype'] if pd.notna(row['ftype']) else ''
+            fileformat = row['fileformat'] if pd.notna(row['fileformat']) else ''
+            print(f"{product}\t{ftype}\t{fileformat}")
 
 
 if __name__ == '__main__':

@@ -59,22 +59,10 @@ MidFile 是一个用于管理生物信息学分析过程中产生的中间文件
 #### 使用 pip 安装
 
 ```bash
-pip install midfile
+pip install midfile -i https://pypi.org/simple
+# pip install --upgrade midfile==version -i https://pypi.org/simple
 ```
 
-#### 使用 Poetry 安装（开发模式）
-
-```bash
-# 克隆仓库
-git clone https://github.com/seqyuan/midfile.git
-cd midfile
-
-# 使用 Poetry 安装
-poetry install
-
-# 或使用 pip 安装（在项目目录下）
-pip install -e .
-```
 
 ### 依赖要求
 
@@ -90,8 +78,6 @@ pip install -e .
 
 **配置文件位置**：
 - Linux/macOS：`~/.config/midfile.yml`
-- Windows：`%USERPROFILE%\.config\midfile.yml`
-- 如果设置了 `XDG_CONFIG_HOME` 环境变量：`$XDG_CONFIG_HOME/midfile.yml`
 
 **配置文件格式**：
 
@@ -252,25 +238,15 @@ midfile info
 
 **示例输出**：
 ```
-数据库中的唯一值：
-
-Product:
-  - RNA-seq
-  - scRNA-seq
-  - ATAC-seq
-
-Ftype:
-  - raw
-  - clean
-  - filtered
-
-Fileformat:
-  - fastq
-  - rds
-  - gef
+product	ftype	fileformat
+RNA-seq	raw	fastq
+RNA-seq	clean	fastq
+scRNA-seq	raw	rds
+scRNA-seq	filtered	rds
+ATAC-seq	raw	fastq
 ```
 
-**说明**：该命令用于查看数据库中已使用的数据类型，方便用户了解数据库内容。
+**说明**：该命令用于查看数据库中 `product`、`ftype`、`fileformat` 的唯一组合，输出为制表符分隔的表格格式，方便用户了解数据库中的数据类型组合。
 
 ### 参考基因组版本管理
 
@@ -386,23 +362,6 @@ midfile c2l \
 | `l2c` | - | 上传文件到云存储 | `--local_path`, `--cloud_path`（`--bucket`可选） |
 | `c2l` | - | 从云存储下载文件 | `--cloud_path`, `--outpath`（`--bucket`可选） |
 
-## 安全特性
-
-1. **SQL注入防护**：所有数据库查询使用参数化查询，防止SQL注入攻击
-2. **列名白名单**：更新和查询操作使用列名白名单验证，防止非法列名访问
-3. **配置文件分离**：敏感信息（访问密钥）存储在用户配置文件中，不硬编码在代码中
-4. **异常处理**：完善的异常处理和错误日志记录
-5. **权限控制**：数据库目录和配置文件权限可根据需要设置
-
-## 日志功能
-
-程序使用 Python `logging` 模块记录操作日志，包括：
-- 文件上传/下载操作
-- 数据库操作
-- 配置文件操作
-- 错误信息
-
-日志级别：INFO
 
 ## 注意事项
 
@@ -413,84 +372,20 @@ midfile c2l \
 5. **输出目录**：查询和下载操作会自动创建不存在的输出目录
 6. **参考基因组记录**：`insert_ref` 命令会检查记录是否已存在，避免重复插入
 7. **Bucket配置**：建议在配置文件中设置默认bucket，这样在使用 `l2c` 和 `c2l` 命令时无需每次都指定bucket
-8. **数据库升级**：如果使用旧版本数据库，运行 `init` 或任何数据库操作时会自动升级表结构，添加 `product` 列
-9. **配置文件自动初始化**：首次运行任何 `midfile` 命令时，会自动从包中拷贝配置文件模板到用户配置目录
-10. **权限设置**：`init` 命令会将数据库目录和配置文件权限设置为 777，请根据实际安全需求调整
+8. **配置文件自动初始化**：首次运行任何 `midfile` 命令时，会自动从包中拷贝配置文件模板到用户配置目录
+9. **权限设置**：`init` 命令会将数据库目录和配置文件权限设置为 777，请根据实际安全需求调整
 
-## 技术栈
-
-- **Python 3.8+**
-- **SQLite3**：轻量级数据库
-- **Click**：命令行接口框架
-- **Pandas**：数据处理和查询结果导出
-- **PyYAML**：配置文件解析
-- **Boto3**：AWS SDK（用于兼容 S3 协议的对象存储服务接口）
-- **Poetry**：依赖管理和打包工具
-
-## 项目结构
-
-```
-midfile/
-├── pyproject.toml          # Poetry 配置文件
-├── README.md               # 项目文档
-├── midfile/                # Python 包
-│   ├── __init__.py
-│   ├── cli.py              # 命令行接口
-│   ├── db.py               # 数据库操作
-│   ├── cloud.py            # 云存储操作
-│   ├── config.py           # 配置管理
-│   └── midfile.yml         # 配置文件模板
-└── .github/                # GitHub Actions 工作流
-```
-
-## 开发说明
-
-### 代码结构
-
-- `midfile/cli.py`：命令行接口，使用 Click 框架定义各种命令
-- `midfile/db.py`：数据库操作类 `db_sql`，支持上下文管理器
-- `midfile/cloud.py`：云存储操作，包括客户端创建、文件上传/下载等
-- `midfile/config.py`：配置管理，包括配置文件加载、更新等
-- `midfile/midfile.yml`：配置文件模板，会在首次运行时拷贝到用户配置目录
-
-### 开发环境设置
-
-```bash
-# 克隆仓库
-git clone https://github.com/seqyuan/midfile.git
-cd midfile
-
-# 安装 Poetry（如果未安装）
-curl -sSL https://install.python-poetry.org | python3 -
-
-# 安装依赖
-poetry install
-
-# 激活虚拟环境
-poetry shell
-
-# 运行测试
-poetry run midfile --help
-```
-
-### 构建和发布
-
-```bash
-# 构建包
-poetry build
-
-# 发布到 PyPI（需要配置 PyPI 凭证）
-poetry publish
-```
-
-## 许可证
-
-[请根据实际情况填写]
 
 ## 作者
 
-Yuanzan <yuanzan@example.com>
+Yuan Zan <yfinddream@gmail.com>
 
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+## release
+```
+version="v0.1.1" && \
+git add -A && git commit -m $version && git tag $version && git push origin main && git push origin $version
+```
