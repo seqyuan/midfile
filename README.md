@@ -60,7 +60,7 @@ MidFile 是一个用于管理生物信息学分析过程中产生的中间文件
 
 ```bash
 pip install midfile -i https://pypi.org/simple
-# pip install --upgrade midfile==version -i https://pypi.org/simple
+# pip install --upgrade midfile==0.1.3 -i https://pypi.org/simple
 ```
 
 
@@ -384,6 +384,6 @@ Yuan Zan <yfinddream@gmail.com>
 
 ## release
 ```
-version="v0.1.2" && \
+version="v0.1.3" && \
 git add -A && git commit -m $version && git tag $version && git push origin main && git push origin $version
 ```
