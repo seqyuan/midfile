@@ -1,7 +1,6 @@
 """配置文件管理模块"""
 import os
 import yaml
-import shutil
 import logging
 from pathlib import Path
 
@@ -9,87 +8,25 @@ logger = logging.getLogger(__name__)
 
 
 def get_config_path():
-    """获取配置文件路径"""
-    # 优先使用 XDG_CONFIG_HOME，否则使用 ~/.config
-    config_home = os.environ.get('XDG_CONFIG_HOME')
-    if config_home:
-        config_dir = Path(config_home)
-    else:
-        config_dir = Path.home() / '.config'
-    
-    # 确保目录存在
-    config_dir.mkdir(parents=True, exist_ok=True)
-    return config_dir / 'midfile.yml'
+    """获取配置文件路径（安装目录中的配置文件）"""
+    return get_package_config_path()
 
 
 def get_package_config_path():
-    """获取包中的配置文件路径"""
+    """获取包中的配置文件路径（返回实际文件系统路径）"""
     try:
-        # Python 3.9+ 使用 importlib.resources
-        from importlib.resources import files
-        return files('midfile') / 'midfile.yml'
-    except ImportError:
-        # Python 3.8 使用 importlib_resources
-        try:
-            from importlib_resources import files
-            return files('midfile') / 'midfile.yml'
-        except ImportError:
-            # 回退方案：使用 __file__
-            import midfile
-            package_dir = Path(midfile.__file__).parent
-            return package_dir / 'midfile.yml'
-
-
-def _create_default_config(config_path):
-    """创建默认配置文件"""
-    default_config = {
-        'dbpath': '/data/midfile.db',
-        'cloud': {
-            'access_key': '',
-            'secret_key': '',
-            'endpoint': '',
-            'bucket': ''
-        }
-    }
-    with open(config_path, 'w', encoding='utf-8') as f:
-        yaml.dump(default_config, f, allow_unicode=True, default_flow_style=False)
-    logger.info(f'已创建默认配置文件: {config_path}')
-
-
-def init_user_config():
-    """初始化用户配置文件，从包中拷贝"""
-    user_config_path = get_config_path()
-    package_config_path = get_package_config_path()
-    
-    # 如果用户配置文件不存在，从包中拷贝
-    if not user_config_path.exists():
-        # 尝试从包中读取配置文件
-        try:
-            # 如果 package_config_path 是 Traversable 对象（importlib.resources）
-            if hasattr(package_config_path, 'read_bytes'):
-                config_content = package_config_path.read_bytes()
-                with open(user_config_path, 'wb') as f:
-                    f.write(config_content)
-                logger.info(f'已从包中拷贝配置文件到: {user_config_path}')
-            elif package_config_path.exists():
-                # 如果是普通路径对象
-                shutil.copy(package_config_path, user_config_path)
-                logger.info(f'已从包中拷贝配置文件到: {user_config_path}')
-            else:
-                # 包中没有配置文件，创建默认配置
-                _create_default_config(user_config_path)
-        except Exception as e:
-            logger.warning(f'无法从包中拷贝配置文件: {e}，将创建默认配置')
-            _create_default_config(user_config_path)
+        # 使用 __file__ 获取包的实际安装路径
+        import midfile
+        package_dir = Path(midfile.__file__).parent
+        return package_dir / 'midfile.yml'
+    except Exception as e:
+        logger.error(f'无法获取包路径: {e}')
+        raise
 
 
 def load_config():
-    """加载配置文件"""
+    """从安装目录加载配置文件"""
     config_path = get_config_path()
-    
-    # 如果配置文件不存在，先初始化
-    if not config_path.exists():
-        init_user_config()
     
     if not config_path.exists():
         raise FileNotFoundError(f'配置文件不存在: {config_path}')
@@ -106,10 +43,16 @@ def update_config_dbpath(dbpath):
     config = load_config()
     config['dbpath'] = dbpath
     
-    with open(config_path, 'w', encoding='utf-8') as f:
-        yaml.dump(config, f, allow_unicode=True, default_flow_style=False)
-    
-    logger.info(f'已更新配置文件 dbpath: {dbpath}')
+    # 尝试写入，如果失败则提示（配置文件可能为只读）
+    try:
+        with open(config_path, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f, allow_unicode=True, default_flow_style=False)
+        logger.info(f'已更新配置文件 dbpath: {dbpath}')
+    except (PermissionError, OSError) as e:
+        logger.warning(f'无法写入配置文件（可能为只读）: {config_path}，错误: {e}')
+        logger.warning(f'请手动编辑配置文件，将 dbpath 设置为: {dbpath}')
+        # 仍然更新内存中的配置，但不写入文件
+        logger.info(f'内存中的配置已更新 dbpath: {dbpath}')
 
 
 def get_dbpath():

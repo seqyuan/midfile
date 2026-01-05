@@ -60,7 +60,7 @@ MidFile 是一个用于管理生物信息学分析过程中产生的中间文件
 
 ```bash
 pip install midfile -i https://pypi.org/simple
-# pip install --upgrade midfile==0.1.5 -i https://pypi.org/simple
+# pip install --upgrade midfile==0.1.6 -i https://pypi.org/simple
 ```
 
 
@@ -74,10 +74,12 @@ pip install midfile -i https://pypi.org/simple
 
 ### 配置文件
 
-首次运行 `midfile` 命令时，程序会自动从包中拷贝配置文件模板到用户配置目录。
+配置文件位于安装目录中，所有用户共享同一个配置文件。
 
 **配置文件位置**：
-- Linux/macOS：`~/.config/midfile.yml`
+- 安装目录：`<Python安装目录>/site-packages/midfile/midfile.yml`
+- 例如：`/usr/local/lib/python3.x/site-packages/midfile/midfile.yml` 或 `/path/to/venv/lib/python3.x/site-packages/midfile/midfile.yml`
+- 可以使用 `midfile info` 命令查看配置文件的实际位置
 
 **配置文件格式**：
 
@@ -236,6 +238,8 @@ midfile info
 
 **示例输出**：
 ```
+配置文件位置: /usr/local/lib/python3.10/site-packages/midfile/midfile.yml
+
 product	ftype	fileformat
 RNA-seq	raw	fastq
 RNA-seq	clean	fastq
@@ -244,7 +248,7 @@ scRNA-seq	filtered	rds
 ATAC-seq	raw	fastq
 ```
 
-**说明**：该命令用于查看数据库中 `product`、`ftype`、`fileformat` 的唯一组合，输出为制表符分隔的表格格式，方便用户了解数据库中的数据类型组合。
+**说明**：该命令首先显示配置文件的位置，然后显示数据库中 `product`、`ftype`、`fileformat` 的唯一组合，输出为制表符分隔的表格格式，方便用户了解数据库中的数据类型组合。
 
 ### 参考基因组版本管理
 
@@ -311,7 +315,7 @@ midfile l2c \
 ```
 
 **说明**：
-- 如果不指定 `--bucket`，会使用配置文件 `~/.config/midfile.yml` 中的 `bucket` 配置
+- 如果不指定 `--bucket`，会使用安装目录中配置文件 `midfile.yml` 中的 `bucket` 配置
 - 如果配置文件中也没有指定，命令会报错
 - 如果云上路径已存在，会提示"云上路径已存在"，不会重复上传
 
@@ -365,12 +369,12 @@ midfile c2l \
 
 1. **文件路径唯一性**：`files` 表中的 `filepath` 字段是唯一的，不能重复插入相同路径的文件
 2. **pmid 必填**：`pmid` 字段不能为空，插入记录时必须提供子项目ID
-3. **配置文件安全**：请妥善保管 `~/.config/midfile.yml` 文件，不要泄露访问密钥
+3. **配置文件安全**：配置文件位于安装目录中，请妥善保管，不要泄露访问密钥。可以使用 `midfile info` 命令查看配置文件位置
 4. **数据库位置**：数据库文件路径可通过 `init` 命令指定，并会自动更新到配置文件中
 5. **输出目录**：查询和下载操作会自动创建不存在的输出目录
 6. **参考基因组记录**：`insert_ref` 命令会检查记录是否已存在，避免重复插入
 7. **Bucket配置**：建议在配置文件中设置默认bucket，这样在使用 `l2c` 和 `c2l` 命令时无需每次都指定bucket
-8. **配置文件自动初始化**：首次运行任何 `midfile` 命令时，会自动从包中拷贝配置文件模板到用户配置目录
+8. **配置文件位置**：配置文件位于安装目录中，所有用户共享。如果配置文件为只读，`init` 命令更新 `dbpath` 时可能会失败，需要管理员手动编辑配置文件
 9. **权限设置**：`init` 命令会将数据库目录和配置文件权限设置为 777，请根据实际安全需求调整
 
 
@@ -384,6 +388,6 @@ Yuan Zan <yfinddream@gmail.com>
 
 ## release
 ```
-version="v0.1.5" && \
+version="v0.1.6" && \
 git add -A && git commit -m $version && git tag $version && git push origin main && git push origin $version
 ```

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "midfile"
-version = "0.1.5"
+version = "0.1.6"
 description = "中间文件数据库管理系统"
 authors = ["Yuan Zan <yfinddream@gmail.com>"]
 readme = "README.md"

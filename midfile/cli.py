@@ -5,7 +5,7 @@ import sys
 import logging
 import pandas as pd
 from pathlib import Path
-from .config import get_dbpath, init_user_config, update_config_dbpath
+from .config import get_dbpath, update_config_dbpath, get_config_path
 from .db import db_sql
 from .cloud import client, get_default_bucket, upload_file2cloud, download_file, query_obj
 
@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 @click.group()
 def main():
     """MidFile - 中间文件数据库管理系统"""
-    # 确保用户配置文件已初始化
-    init_user_config()
     pass
 
 
@@ -277,6 +275,11 @@ def ref_query(outfile, subprojectid):
 @main.command(name="info", short_help="显示 product, ftype, fileformat 的唯一值")
 def info():
     """显示数据库中 product, ftype, fileformat 字段的唯一组合"""
+    # 先输出配置文件位置
+    config_path = get_config_path()
+    print(f"配置文件位置: {config_path}")
+    print()
+    
     dbpath = get_dbpath()
     with db_sql(dbpath) as tbj:
         df = tbj.get_unique_values()
