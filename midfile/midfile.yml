@@ -1,0 +1,8 @@
+# 云配置
+dbpath: /data/midfile.db
+cloud:
+  access_key: "AKLTNFjMGY0OWEyN2VkMjM"
+  secret_key: "T1dKbFl6QTFaRGhrdWa01EUQ=="
+  endpoint: "https://tos-cn-seqyuan.ivolces.com"
+  bucket: "sci"
+
