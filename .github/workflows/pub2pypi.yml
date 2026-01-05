@@ -6,6 +6,9 @@ name: Upload Package
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*'  # Also trigger on tags starting with 'v' (e.g., v0.1.0, v1.2.3)
 
 permissions:
   contents: read
