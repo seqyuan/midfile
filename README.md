@@ -106,8 +106,6 @@ cloud:
 - AWS S3
 - 其他兼容 S3 协议的对象存储服务
 
-**注意**：请勿将包含敏感信息的配置文件提交到版本控制系统。配置文件位置在用户目录下，每个用户有独立的配置。
-
 ## 使用方法
 
 ### 初始化数据库
@@ -386,6 +384,6 @@ Yuan Zan <yfinddream@gmail.com>
 
 ## release
 ```
-version="v0.1.1" && \
+version="v0.1.2" && \
 git add -A && git commit -m $version && git tag $version && git push origin main && git push origin $version
 ```

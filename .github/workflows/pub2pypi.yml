@@ -67,3 +67,4 @@ jobs:
           # Fallback to API token if trusted publishing fails
           username: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+          
